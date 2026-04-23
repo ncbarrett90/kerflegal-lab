@@ -2,11 +2,23 @@
 
 Draw.io sources and exported PNGs for the kerflegal-lab environment.
 
-## Completed
+## Logical Topology
 
-- **Logical Topology** — Zones, VLANs, subnets. The canonical reference for firewall rules, DHCP scopes, and device records.
-- **Physical Topology** — What's plugged into what. Used for cable tracing, connectivity troubleshooting, and hardware planning.
-- **Firewall Policy Map** — Allowed traffic between zones. Easier to audit than the OPNsense rule table.
+Zones, VLANs, subnets. The canonical reference for firewall rules, DHCP scopes, and device records.
+
+![Logical topology](logical-topology.drawio.png)
+
+## Physical Topology
+
+What's plugged into what. Used for cable tracing, connectivity troubleshooting, and hardware planning.
+
+![Physical topology](physical-topology.drawio.png)
+
+## Firewall Policy Map
+
+Allowed traffic between zones. Easier to audit than the OPNsense rule table.
+
+![Firewall policy map](firewall-policy-map.drawio.png)
 
 ## Planned
 

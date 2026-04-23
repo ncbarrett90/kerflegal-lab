@@ -6,7 +6,7 @@ A production-shaped Active Directory lab built around Microsoft's three-tier adm
 
 ## Architecture
 
-![Logical topology](diagrams/logical-topology.png)
+![Logical topology](diagrams/logical-topology.drawio.png)
 
 Physical topology and firewall policy map are in [diagrams/](diagrams/).
 
@@ -16,10 +16,10 @@ Physical topology and firewall policy map are in [diagrams/](diagrams/).
 kerflegal-lab/
 ├── README.md
 ├── <a href="build-log/">build-log/</a>     narrative writeups for each build phase, added as phases complete
-├── <a href="decisions/">decisions/</a>     architecture decisions, each recording the alternatives considered. See the <a href="decisions/adr-index.md">ADR index</a>.
+├── <a href="decisions/">decisions/</a>     architecture decisions, each recording the alternatives considered. See the <a href="decisions/README.md">ADR index</a>.
 ├── <a href="design/">design/</a>        network design, IP and VLAN scheme, physical provisioning, diagrams reference
 ├── <a href="diagrams/">diagrams/</a>      draw.io source and exported PNGs for the lab's topology
-└── <a href="runbooks/">runbooks/</a>      repeatable operational procedures with validation and rollback steps
+└── <a href="procedures/">procedures/</a>    device-specific procedures, ordered by execution sequence
 </pre>
 
-Environment-specific artifacts (CIS control mapping, change log, device records, account registry, filled runbooks) are gitignored and held outside the public repo.
+Environment-specific artifacts (CIS control mapping, change log, device records, account registry, private procedure detail) are gitignored and held outside the public repo.

@@ -1,8 +1,8 @@
-# Runbook: [Procedure Name]
+# [Procedure Name]
  
-> **Usage:** Copy this template to a new file named `RB-short-kebab-case-title.md`. Fill in each section. Keep it tight - if the procedure section is longer than ~30 steps, split it into separate runbooks.
+> **Usage:** Copy this template to a new file named `NN-<device-or-scope>-<task>.md`, where `NN` is the two-digit zero-padded execution order. Fill in each section. Keep it tight - if the procedure section is longer than ~30 steps, split into separate procedures.
 >
-> **Where these live:** `kerflegal-lab/runbooks/` in the runbooks directory at the root of the project.
+> **Where these live:** `kerflegal-lab/procedures/` at the root of the project.
  
 ---
  

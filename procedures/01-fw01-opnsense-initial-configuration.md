@@ -1,7 +1,7 @@
-# Runbook: OPNsense Initial Configuration
+# fw01 OPNsense Initial Configuration
 
 ## Purpose
-Configure OPNsense from fresh install to a hardened single-LAN firewall. Default LAN allow-any rule is left in place. VLAN segmentation and zone firewall policy are handled in separate runbooks.
+Configure OPNsense from fresh install to a hardened single-LAN firewall. Default LAN allow-any rule is left in place. VLAN segmentation and zone firewall policy are handled in separate procedures.
 
 ## Prerequisites
 - OPNsense GUI reachable as `root`
@@ -14,7 +14,7 @@ Configure OPNsense from fresh install to a hardened single-LAN firewall. Default
 
 ### 1. Baseline backup
 System > Configuration > Backups.
-- Set Backup Count to `100` (default 60). More on-device history for rollback during and after this runbook.
+- Set Backup Count to `100` (default 60). More on-device history for rollback during and after this procedure.
 - Download current config as `config-baseline-YYYY-MM-DD.xml`. Store off-box.
 
 ### 2. Apply pending updates
@@ -111,9 +111,9 @@ Download config as `config-post-initial-YYYY-MM-DD.xml`. Store off-box.
 ## Rollback
 Three paths, in order of preference:
 
-1. **GUI — History revert:** System > Configuration > History. Select a config version from before this runbook started. Revert. Firewall applies and may reboot.
+1. **GUI — History revert:** System > Configuration > History. Select a config version from before this procedure started. Revert. Firewall applies and may reboot.
 2. **GUI — Restore from XML:** System > Configuration > Backups > Restore Configuration. Upload `config-baseline-YYYY-MM-DD.xml`. Apply. Firewall reboots.
-3. **Console — boot-shell:** Physical console. Log in as `root`. Option 13 (Restore a backup) lists on-device history; pick a pre-runbook version. If on-device history is gone or inaccessible, USB the off-box XML and follow the [OPNsense config restore via boot shell](https://docs.opnsense.org/troubleshooting/config_reset.html) procedure.
+3. **Console — boot-shell:** Physical console. Log in as `root`. Option 13 (Restore a backup) lists on-device history; pick a pre-procedure version. If on-device history is gone or inaccessible, USB the off-box XML and follow the [OPNsense config restore via boot shell](https://docs.opnsense.org/troubleshooting/config_reset.html) procedure.
 
 **Rehearsal:** after the baseline backup, make a trivial change (host description) and revert via path 1. Untested paths are guesses — exercise path 3 at least once on new hardware.
 

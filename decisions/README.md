@@ -6,7 +6,7 @@
 > 1. Copy `adr-template.md` to `ADR-NNNN-short-kebab-case-title.md` using the next number
 > 2. Fill in the ADR
 > 3. Add a row to the index below
-> 4. Link the ADR from any affected device records, runbooks, or other ADRs
+> 4. Link the ADR from any affected device records, procedures, or other ADRs
 >
 > **Status values:**
 > - **Proposed** - Drafted but not yet in force

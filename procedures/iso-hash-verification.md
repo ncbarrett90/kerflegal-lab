@@ -1,4 +1,4 @@
-# Runbook: ISO Hash Verification
+# ISO Hash Verification
 
 > **Usage:** Run before any downloaded ISO is attached to a VM, written to installation media, or uploaded to a Proxmox host. Applies to both Linux and Windows workstations.
 
