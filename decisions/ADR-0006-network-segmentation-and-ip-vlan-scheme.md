@@ -23,7 +23,7 @@ Six lab zones plus a declared HOME zone, each on its own VLAN and subnet. VLAN I
 | IDENTITY | 40 | 10.0.40.0/24 | 10.0.40.1 | 0 | DCs, CA |
 | SERVERS | 50 | 10.0.50.0/24 | 10.0.50.1 | 1 | File servers, member servers |
 | CLIENTS | 60 | 10.0.60.0/24 | 10.0.60.1 | 2 | Domain-joined Windows workstations |
-| HOME (out of scope) | 100 | 10.0.100.0/24 | 10.0.100.1 | 0 | Personal workstation, access switch, access point |
+| HOME (out of scope) | 100 | 10.0.100.0/24 | 10.0.100.1 | 0 | Personal workstation, access point |
 
 INFRA, SECURITY, PAW, and IDENTITY are all Tier 0 but separated by traffic profile and trust boundary: INFRA carries the hypervisor and infrastructure management plane, SECURITY accepts inbound log/agent traffic from every zone, PAW holds the Privileged Access Workstations, and IDENTITY holds the authentication and certificate authorities. Keeping these separate prevents a single compromise from giving broad Tier 0 access.
 

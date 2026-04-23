@@ -84,12 +84,6 @@ Dedicated Wazuh SIEM. Runs on its own hardware, off the Proxmox cluster.
 
 Distribution switch. All cluster nodes, pve04, pbs01, wazuh01, ap01, and the fw01 LAN uplink terminate here.
 
-### sw02 (TP-Link TL-SG108E)
-
-8-port managed switch.
-
-Access switch. Uplinks to sw01.
-
 ### ap01 (Ubiquiti AC Pro)
 
 Wi-Fi access point, PoE-powered.

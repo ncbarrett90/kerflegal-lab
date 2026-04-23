@@ -72,7 +72,6 @@ Physical devices only. VMs added as provisioned.
 | pve04 | INFRA | 10.0.10.8 |
 | pbs01 | INFRA | 10.0.10.10 |
 | sw01 | INFRA | 10.0.10.15 |
-| sw02 | INFRA | 10.0.10.16 |
 | ap01 | INFRA | 10.0.10.20 |
 | wazuh01 | SECURITY | 10.0.20.5 |
 
@@ -94,7 +93,7 @@ Default deny between all zones at the firewall. Categories below capture the req
 |---|---|---|---|---|
 | 1 | Firewall uplink | fw01 LAN | Trunk (VLANs 10/20/30/40/50/60/100) | No |
 | 2 | AP | ap01 | Trunk (PVID 10, tagged 100) | Yes |
-| 3 | Access switch uplink | sw02 port 1 | Trunk (VLANs 10/100) | No |
+| 3 | Personal workstation HOME | workstation | Access, PVID 100 | No |
 | 4 | Proxmox primary | pve01 | Trunk (VLANs 10/30/40/50/60) | No |
 | 5 | Proxmox node | pve02 | Trunk (VLANs 10/30/40/50/60) | No |
 | 6 | Proxmox node | pve03 | Trunk (VLANs 10/30/40/50/60) | No |
@@ -104,19 +103,11 @@ Default deny between all zones at the firewall. Categories below capture the req
 | 10-23 | Reserved | - | Disabled | - |
 | 24 | Break-glass MGMT | - | Access, PVID 10, disabled by default | No |
 
-### sw02 (TP-Link TL-SG108E)
-
-| Port | Role | Port Type |
-|---|---|---|
-| 1 | Uplink to sw01 port 3 | Trunk (VLANs 10/100) |
-| 2 | Personal workstation HOME | Access, PVID 100 |
-| 3-8 | Disabled | - |
-
 Notes:
 
 - Proxmox host ports are trunks because each node runs VMs across multiple zones. VLAN tagging terminates on Linux bridges inside Proxmox.
 - ap01's trunk carries its management untagged on VLAN 10 and the HOME SSID tagged on VLAN 100. No lab SSIDs are broadcast.
-- The personal workstation reaches the lab over the HOME SSID or by wire on sw02 port 2.
+- The personal workstation reaches the lab over the HOME SSID or by wire on sw01 port 3. No intermediate access switch (see [ADR-0012](../decisions/ADR-0012-no-dedicated-home-access-switch.md)).
 
 ## 5. DNS
 
