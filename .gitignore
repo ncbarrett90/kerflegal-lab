@@ -1,0 +1,32 @@
+# Change log (personal ops ledger)
+change-log.md
+
+# CIS control mapping and any other security working files
+security/
+
+# Filled device and account registries
+registries/device-registry.ods
+registries/account-registry.ods
+
+# Filled device records (keep the template)
+registries/devices/*.md
+!registries/devices/device-information-template.md
+
+# Scripts current in development (temporarily private)
+scripts/
+
+# OS and editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# LibreOffice lock files
+.~lock.*#
+
+# Temporary and backup files
+*.bak
+*.tmp
