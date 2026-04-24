@@ -1,7 +1,7 @@
 # sw01 Initial Configuration
 
 ## Purpose
-Configure sw01 (Netgear GS728TPV2) from factory default to the target state defined in `network-design.md`. Admin hardening, VLAN creation, port plan applied, unused ports disabled, management interface moved to INFRA. All work is staged so current management access via flat LAN is preserved until the final step. Session loss is expected at the end of the procedure and is not recovered until network cutover runs.
+Configure sw01 (Netgear GS728TPV2) from factory default to the target state defined in `network-design.md`. Admin hardening, VLAN creation, port plan applied, unused ports disabled, management interface moved to INFRA. All work is staged so current management access via flat LAN is preserved until the final step. Session loss is expected at the end of the procedure and is not recovered until `04-network-cutover` runs.
 
 ## Prerequisites
 - sw01 at factory default
@@ -95,7 +95,7 @@ System > Management > Management Interface, or equivalent.
 
 Apply.
 
-Session drops. Switch is now waiting for VLAN 10 tagged traffic to reach it via the fw01 trunk, which happens during network cutover.
+Session drops. Switch is now waiting for VLAN 10 tagged traffic to reach it via the fw01 trunk, which happens during `04-network-cutover`.
 
 ## Validation
 

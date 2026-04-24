@@ -48,7 +48,7 @@ Interfaces > WAN. Confirm "Block private networks" and "Block bogon networks" ch
 ### 6. Web GUI hardening
 System > Settings > Administration.
 - HTTPS only
-- Listen Interfaces: management-access interface(s) only — not WAN, not "All". For this baseline: LAN.
+- Listen Interfaces: leave blank (all interfaces). Scope-down to INFRA happens in `04-network-cutover` once the target mgmt zone is live.
 - TCP port: change from 443 to non-standard, store in password manager.
 - Session timeout: 30 min
 
@@ -64,27 +64,25 @@ Log out, log back in as `admin.username`. Confirm full GUI access.
 ### 8. Enable TOTP for primary admin
 System > Access > Servers. Add a Local + Timebased One Time Password server.
 
-System > Settings > Administration > Authentication. Enable both Local Database and the new TOTP server (both active during rollout prevents lockout).
+System > Settings > Administration > Authentication. Enable both Local Database and the new TOTP server. Keep both in the chain — Local Database must remain for PAM (console/SSH) auth to function; removing it breaks login at the physical console.
 
 Edit `admin.username`. Generate TOTP seed, store in password manager.
 
 Log out, log back in as `admin.username` with password + TOTP code.
 
-Once verified: Authentication section — remove Local Database, leaving only the TOTP server.
-
 ### 9. Root account (break-glass)
 Edit `root`.
 - Confirm password is strong, store in password manager.
-- Do not generate a TOTP seed — this blocks root from the Step 8 GUI auth chain.
+- Do not generate a TOTP seed.
 
-Root is break-glass only: physical console for config restore. GUI is gated by the missing TOTP seed.
+Root is break-glass: PAM/console access via Local Database (password only, no TOTP). Network-layer rule scoping on fw01 admin (source alias → `INFRA address` → `fw01_mgmt_ports`) is what restricts GUI reach, not the auth chain.
 
 ### 10. SSH
 System > Settings > Administration > Secure Shell.
 - Enable
 - Permit root login: off
 - Permit password login: off (keys only)
-- Listen on management-access interface(s) — not WAN. For this baseline: LAN.
+- Listen Interfaces: leave blank (all interfaces). Scope-down to INFRA happens in `04-network-cutover`.
 
 System > Access > Users. Edit `admin.username`. Paste the admin public key into Authorized keys. Save.
 
@@ -102,7 +100,7 @@ Download config as `config-post-initial-YYYY-MM-DD.xml`. Store off-box.
 
 ## Validation
 - `admin.username` logs into GUI (new port) with password + TOTP code; reaches full menus
-- `root` GUI login fails; console login works
+- `root` console login works (PAM via Local Database)
 - `nslookup google.com <lan-ip>` from workstation returns an answer
 - Test queries show no port-53 traffic on WAN (853 only)
 - `ssh admin.username@<lan-ip>` succeeds via key auth
@@ -118,4 +116,7 @@ Three paths, in order of preference:
 **Rehearsal:** after the baseline backup, make a trivial change (host description) and revert via path 1. Untested paths are guesses — exercise path 3 at least once on new hardware.
 
 ## Troubleshooting
-*(Empty. Fill as issues arise.)*
+
+**Symptom:** Console/SSH login fails; GUI may still work.
+**Cause:** Local Database removed from GUI auth chain — OPNsense disables PAM for affected users. `passwd` in single-user doesn't persist; config.xml regenerates master.passwd on boot.
+**Fix:** Single-user (loader option 2) → `mount -uw /` (ZFS: `zfs set readonly=off zroot` first if read-only) → `cp /conf/backup/config-<ts>.xml /conf/config.xml` → reboot. Keep Local Database in the auth chain.

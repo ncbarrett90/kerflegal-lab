@@ -76,4 +76,7 @@ Additive only. Any of three paths reverts cleanly.
 3. **Per-object cleanup:** Services > DHCPv4 > [zone], disable. Services > Unbound DNS, remove from Network Interfaces. Interfaces > Assignments, unassign the OPT. Interfaces > Other Types > VLAN, delete the VLAN device.
 
 ## Troubleshooting
-*(Empty. Fill as issues arise.)*
+
+**Symptom:** Kea fails to start on new zone: `DHCPSRV_OPEN_SOCKET_FAIL ... Address already in use`.
+**Cause:** dnsmasq binds `*:67` wildcard. OPNsense 26.1 "Strict Interface Binding" does not release other interfaces.
+**Fix:** Disable dnsmasq entirely (Services > Dnsmasq DNS & DHCP > uncheck Enable). Move any other-zone DHCP to Kea.
