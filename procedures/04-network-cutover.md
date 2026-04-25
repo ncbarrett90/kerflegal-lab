@@ -1,4 +1,4 @@
-# network cutover
+# Network Cutover
 
 ## Purpose
 Retire the legacy flat LAN now that the workstation has been cut over to HOME. Removes the fw01 LAN interface + allow-any rule, the sw01 port-12 transit, and the VLAN 1 untagged membership on sw01 port 1 (fw01 trunk). After this procedure, sw01 port 1 is tagged-only and no host reaches fw01 via VLAN 1.
@@ -30,7 +30,7 @@ Switching > Ports. Port 12 → Admin status: Disabled. Save.
 ### 4. Strip VLAN 1 untagged from sw01 port 1
 Switching > VLAN > Port Membership, port 1:
 - Remove VLAN 1 from untagged membership
-- PVID: set to the planned trunk PVID
+- PVID `10` (PVID is inert under Tagged Only + Ingress Filtering, but pick a valid VLAN)
 - Acceptable Frame Types: Tagged Only
 - Ingress Filtering: enabled
 

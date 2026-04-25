@@ -22,7 +22,7 @@ Allowed traffic between zones. Easier to audit than the OPNsense rule table.
 
 ## Planned
 
-- **Service Dependency Map** — What breaks if I take this down. Drives maintenance planning, blast radius assessment, and backup priorities.
-- **AD Structure** — OU hierarchy, GPO linkage, group relationships.
-- **Backup Flow** — What's backed up, where it lands, how to restore.
-- **Log Flow** — What generates logs, where they go, what processes them.
+- **Service Dependency Map.** What breaks if I take this down. Drives maintenance planning, blast radius assessment, and backup priorities.
+- **AD Structure.** OU hierarchy, GPO linkage, group relationships.
+- **Backup Flow.** What's backed up, where it lands, how to restore.
+- **Log Flow.** What generates logs, where they go, what processes them.
