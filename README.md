@@ -1,6 +1,6 @@
 # kerflegal-lab
 
-A production-shaped Active Directory lab built around Microsoft's three-tier administrative model, with six segmented network zones and default-deny between them. Every architectural decision is captured in an ADR, including the alternatives that were rejected.
+A production-shaped Active Directory lab built around Microsoft's three-tier administrative model, with six segmented network zones and default-deny between them. Every architectural decision is captured in an ADR, including the alternatives that were rejected. The [build log](build-log/) walks through how the lab came together, phase by phase.
 
 **Stack:** OPNsense, Proxmox VE, Proxmox Backup Server, Wazuh, Windows Server, Active Directory Domain Services, Active Directory Certificate Services.
 

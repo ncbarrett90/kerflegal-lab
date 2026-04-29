@@ -1,5 +1,11 @@
 # Build log
 
-Narrative writeups of each build phase, added as phases complete. Each phase lives in its own folder (`YYYY-MM-phase-name/`) with a `README.md` for the phase narrative. Per-device buildout detail (gotchas, deviations, screenshots) is kept privately and not duplicated here.
+The build log is the narrative side of the build. Each phase gets a writeup that walks through what was done, why, and what almost went wrong, so a reader landing in the repo can understand how the lab came together before opening procedures or decisions for the underlying detail.
 
-The change log (gitignored) is the operational ledger of state changes. The build log is the public narrative covering the same phases.
+That detail lives elsewhere in the repo. Step-by-step device buildout is collected in [`procedures/`](../procedures/), and the architectural reasoning along with the alternatives rejected is in [`decisions/`](../decisions/). The change log, which is gitignored, is the chronological ledger of state changes that this narrative covers.
+
+## Index
+
+| Phase | Period | Summary |
+|---|---|---|
+| [Network Buildout](2026-04-network-buildout/) | April 2026 | Firewall hardening, VLAN segmentation, switch buildout, network cutover, and AP adoption |
