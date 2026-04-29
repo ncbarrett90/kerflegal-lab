@@ -2,9 +2,17 @@
 
 Proxmox hypervisor architecture and VM placement.
 
+## Cluster as a Tier 0 Trust Domain
+
+The cluster control plane is uniformly Tier 0. Any node can act on any other node's VMs, so a host running any Tier 0 VM ([ADR-0001](../decisions/ADR-0001-three-tier-administrative-model.md)) is itself Tier 0.
+
+Workloads distribute across nodes by hardware fit and redundancy, not by tier. Tier separation is enforced above the hypervisor (network zones, accounts, PAWs, GPO).
+
+pve04 sits outside the cluster ([ADR-0010](../decisions/ADR-0010-dedicated-paw-hypervisor.md)) so its trust domain is separate from the hypervisors its PAWs administer.
+
 ## 1. Cluster Architecture
 
-Three-node Proxmox cluster with HA enabled. Workloads distribute across nodes rather than pin by tier. Tier separation is enforced at the network, firewall, credential, and identity layers.
+Three-node Proxmox cluster with HA enabled.
 
 | Node | CPU | RAM | Role |
 |---|---|---|---|
@@ -16,7 +24,11 @@ Backup to pbs01 on dedicated hardware.
 
 ## 2. Storage
 
-Each node has a primary NVMe and a secondary SSD. Pool layout is deferred to an ADR written when the cluster is built.
+NVMe holds the Proxmox OS. Secondary SSD is a ZFS pool registered under the same storage ID on every host. All VM disks live on this pool.
+
+The cluster (pve01-03) uses Proxmox storage replication for HA. Replication is per VM with targets chosen so redundant pairs sit on different hosts. RPO equals the replication interval. pve04 uses the same disk layout but does not replicate.
+
+See [ADR-0013](../decisions/ADR-0013-cluster-storage-and-replication.md).
 
 ## 3. Network Integration
 
@@ -79,3 +91,11 @@ flowchart TB
 ```
 
 paw03 remains on pve03 in the cluster. Tier 2 compromise scope is limited to workstation administration and is accepted for the current hardware state.
+
+## 6. Backup
+
+PBS ([ADR-0004](../decisions/ADR-0004-pbs-tier0-classification.md)) is the backup target for all cluster VMs and Proxmox node configurations. Each node has its own PBS API token, scoped to a per-node namespace, with prune protection.
+
+Backups run on a schedule with daily, weekly, and monthly retention. A scheduled verify job runs against the datastore. An off-site copy is part of the design with mechanism deferred to a follow-up ADR.
+
+See [ADR-0014](../decisions/ADR-0014-backup-architecture.md).
