@@ -32,5 +32,6 @@
 | [0010](ADR-0010-dedicated-paw-hypervisor.md) | Dedicated Hypervisor for Tier 0 and Tier 1 PAWs | Accepted | 2026-04-22 | - |
 | [0011](ADR-0011-infrastructure-dns-zone.md) | Infrastructure DNS Zone | Accepted | 2026-04-22 | - |
 | [0012](ADR-0012-no-dedicated-home-access-switch.md) | No Dedicated HOME Access Switch | Accepted | 2026-04-23 | - |
+| [0013](ADR-0013-cluster-storage-and-replication.md) | Cluster Storage Layout and Replication | Accepted | 2026-04-28 | - |
 
 ---
