@@ -10,7 +10,7 @@ registries/account-registry.ods
 
 # Filled device records (keep the template)
 registries/devices/*.md
-!registries/devices/device-information-template.md
+!registries/devices/-device-information-template.md
 
 # Scripts current in development (temporarily private)
 scripts/
