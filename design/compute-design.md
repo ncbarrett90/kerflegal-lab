@@ -32,7 +32,7 @@ See [ADR-0013](../decisions/ADR-0013-cluster-storage-and-replication.md).
 
 ## 3. Network Integration
 
-Each cluster host connects to sw01 on a trunk carrying VLANs 10, 30, 40, 50, and 60. pve04 connects on a trunk carrying VLANs 10 and 30. VLAN tagging terminates on Linux bridges inside Proxmox so each VM attaches to the bridge for its target zone. Management lives on VLAN 10.
+Each cluster host connects to sw01 on a trunk carrying VLANs 10, 30, 40, 50, 60, and 70. pve04 connects on a trunk carrying VLANs 10 and 30. VLAN tagging terminates on Linux bridges inside Proxmox so each VM attaches to the bridge for its target zone. Management lives on VLAN 10. Cluster corosync traffic lives on VLAN 70 ([ADR-0016](../decisions/ADR-0016-dedicated-cluster-vlan.md)).
 
 ## 4. Cluster VM Placement (Initial)
 

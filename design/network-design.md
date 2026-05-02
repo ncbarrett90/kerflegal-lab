@@ -35,6 +35,7 @@ flowchart TB
 | IDENTITY | 40 | 10.0.40.0/24 | 10.0.40.1 | 0 | DCs, CA |
 | SERVERS | 50 | 10.0.50.0/24 | 10.0.50.1 | 1 | File servers, member servers |
 | CLIENTS | 60 | 10.0.60.0/24 | 10.0.60.1 | 2 | Domain-joined Windows workstations |
+| CLUSTER | 70 | 10.0.70.0/24 | none | 0 | Proxmox corosync ring, L2 only ([ADR-0016](../decisions/ADR-0016-dedicated-cluster-vlan.md)) |
 | HOME | 100 | 10.0.100.0/24 | 10.0.100.1 | out of scope | Personal devices, HOME SSID clients |
 
 Constraints:
@@ -55,6 +56,7 @@ Constraints:
 | IDENTITY | 10.0.40.0/24 | All devices | None |
 | SERVERS | 10.0.50.0/24 | All devices | None |
 | CLIENTS | 10.0.60.0/24 | .1 - .25 | .26 - .100 |
+| CLUSTER | 10.0.70.0/24 | pve01-03 only | None |
 | HOME | 10.0.100.0/24 | .1 - .10 | .11 - .20 |
 
 CLIENTS receives DHCP leases from dc01. Every other zone is statically configured.
@@ -74,6 +76,9 @@ Physical devices only. VMs added as provisioned.
 | sw01 | INFRA | 10.0.10.15 |
 | ap01 | INFRA | 10.0.10.20 |
 | wazuh01 | SECURITY | 10.0.20.5 |
+| pve01 | CLUSTER | 10.0.70.5 |
+| pve02 | CLUSTER | 10.0.70.6 |
+| pve03 | CLUSTER | 10.0.70.7 |
 
 ## 3. Inter-Zone Policy
 
@@ -94,9 +99,9 @@ Default deny between all zones at the firewall. Categories below capture the req
 | 1 | Firewall uplink | fw01 LAN | Trunk, tagged 10/20/30/40/50/60/100, PVID 1 unused | No |
 | 2 | AP | ap01 | Trunk, untagged 10, tagged 100 (ADR-0015 deviation) | Yes |
 | 3 | Personal workstation HOME | workstation | Access, PVID 100 | No |
-| 4 | Proxmox primary | pve01 | Trunk, tagged 10/30/40/50/60, PVID 1 unused | No |
-| 5 | Proxmox node | pve02 | Trunk, tagged 10/30/40/50/60, PVID 1 unused | No |
-| 6 | Proxmox node | pve03 | Trunk, tagged 10/30/40/50/60, PVID 1 unused | No |
+| 4 | Proxmox primary | pve01 | Trunk, tagged 10/30/40/50/60/70, PVID 1 unused | No |
+| 5 | Proxmox node | pve02 | Trunk, tagged 10/30/40/50/60/70, PVID 1 unused | No |
+| 6 | Proxmox node | pve03 | Trunk, tagged 10/30/40/50/60/70, PVID 1 unused | No |
 | 7 | PAW hypervisor | pve04 | Trunk, tagged 10/30, PVID 1 unused | No |
 | 8 | PBS | pbs01 | Access, PVID 10 | No |
 | 9 | Wazuh SIEM | wazuh01 | Access, PVID 20 | No |
