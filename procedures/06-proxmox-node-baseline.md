@@ -7,13 +7,13 @@ Bring a freshly installed Proxmox VE host (pve01-04) to the minimum state requir
 - PVE 9 installed on NVMe with hostname set per [ADR-0008](../decisions/ADR-0008-device-naming-convention.md)
 - Static IP planned per [network-design.md](../design/network-design.md) (10.0.10.5-8)
 - Switch port configured as a tagged-only trunk per [ADR-0015](../decisions/ADR-0015-hypervisor-trunk-tagging-policy.md)
-- fw01 INFRA allow rules in place per `04-network-cutover` step 6 (ICMP, DNS, NTP, internet egress)
+- fw01 INFRA allow rules in place per [04-network-cutover](04-network-cutover.md) step 6 (ICMP, DNS, NTP, internet egress)
 - Workstation SSH public key on hand and `ssh-copy-id` available
 - Password manager and console access (IPMI/KVM or physical)
 
 ## If PVE was installed previously
 
-Skip this section on hardware that has not run PVE before.
+**Skip this section on hardware that has not run PVE before.**
 
 If the install hardware previously ran Proxmox, the installer detects the existing `pve` LVM volume group and prompts to either cancel or rename it. Choosing rename lets the install proceed and tags the leftover VG as `pve-OLD-<hash>`. The leftover VG must be torn down before step 9, otherwise `zpool create` fails on the secondary SSD.
 
@@ -56,6 +56,10 @@ Expected, the secondary SSD shows no child partitions, `vgs` shows only `pve`.
 
 ## Procedure
 
+Steps 1 and 2 run from the console (KVM/IPMI or physical). After step 2, SSH to the host as `root` from your workstation using the installer password. The remainder runs as `root` in that SSH session, so commands assume root context and do not use `sudo`. Step 3 replaces the installer root password with key auth, step 8 hardens sshd to refuse password auth entirely.
+
+Build phase uses a typable password for `root` and `noah.barrett`. Step 11 rotates both to 20-character strong passwords as the final action before reboot.
+
 ### 1. Hostname check
 ```bash
 hostnamectl
@@ -64,7 +68,7 @@ hostname --fqdn
 Expect short hostname `pveNN`, FQDN `pveNN.infra.kerflegal.com`. Fix `/etc/hostname` and `/etc/hosts` and reboot if wrong.
 
 ### 2. Network configuration
-**Run from console only.** `ifreload -a` will drop the management session on a new IP. Every step after this can be done from SSH.
+**Run from console only.** `ifreload -a` will drop the management session on a new IP. After this step, SSH as root for the remainder.
 
 VLAN-aware bridge with management tagged on VLAN 10 per [ADR-0015](../decisions/ADR-0015-hypervisor-trunk-tagging-policy.md). PVE 9 uses stable NIC naming, the bridge member is typically `nic0`. Substitute the actual name from `ip -br link` if different.
 
@@ -95,7 +99,21 @@ ping -c 3 10.0.10.1
 ```
 Expect `vmbr0.10` carrying the configured IP and ping replies from fw01.
 
-### 3. Package repositories
+### 3. Root SSH key
+Add the workstation public key for root before any further work. The PVE installer leaves password auth on for root, so `ssh-copy-id` is the cleanest path. Doing this early means the rest of the procedure runs from a stable SSH session with key auth.
+
+From your workstation:
+```bash
+ssh-copy-id root@10.0.10.<host-octet>
+```
+
+Confirm key auth works:
+```bash
+ssh root@10.0.10.<host-octet>
+```
+You should land in a shell with no password prompt. Stay in this session for the remainder.
+
+### 4. Package repositories
 PVE 9 / Debian 13 trixie ships APT sources in deb822 format (`.sources` files). Disable enterprise repos, enable no-subscription.
 ```bash
 echo 'Enabled: no' >> /etc/apt/sources.list.d/pve-enterprise.sources
@@ -115,7 +133,7 @@ Verify with `apt update`. Expect fetches from `download.proxmox.com` and the Deb
 
 **CIS:** Package repositories and source trust.
 
-### 4. System update
+### 5. System update
 ```bash
 apt update
 apt -y dist-upgrade
@@ -123,7 +141,7 @@ apt -y autoremove
 ```
 Reboot if the kernel was upgraded.
 
-### 5. Time synchronization
+### 6. Time synchronization
 Point chrony at fw01 only. Non-optional for cluster operation.
 ```bash
 cat > /etc/chrony/chrony.conf <<'EOF'
@@ -141,36 +159,23 @@ Expect a `^*` line on `10.0.10.1` within a minute.
 
 **CIS:** Time synchronization.
 
-### 6. Root SSH key
-Add the workstation public key for root before tightening sshd. The PVE installer leaves password auth enabled for root, so `ssh-copy-id` is the cleanest path.
-
-From your workstation:
-```bash
-ssh-copy-id root@10.0.10.<host-octet>
-```
-
-Confirm key auth works before continuing:
-```bash
-ssh root@10.0.10.<host-octet>
-```
-You should land in a shell with no password prompt.
-
 ### 7. Local admin account
-Per [ADR-0009](../decisions/ADR-0009-account-naming-convention.md) amendment, plain `firstname.lastname` for non-domain hosts. The `--allow-bad-names` flag bypasses Debian's default `NAME_REGEX` rejection of the period in the username.
+Per [ADR-0009](../decisions/ADR-0009-account-naming-convention.md) amendment, plain `firstname.lastname` for non-domain hosts. The `--allow-bad-names` flag bypasses Debian's default `NAME_REGEX` rejection of the period in the username. PVE 9 ships without `sudo`, install it before adding the user to the group.
 ```bash
+apt install -y sudo
 adduser --gecos "" --allow-bad-names noah.barrett
 passwd noah.barrett
 usermod -aG sudo noah.barrett
 ```
-Set a strong password at the `passwd` prompt and store it in the password manager. Setting it explicitly avoids the case where the `adduser` interactive password prompt is skipped.
+Set a typable build-phase password at the `passwd` prompt. Step 11 rotates this to a 20-character strong password.
 
-Verify the password works locally before moving to SSH:
+Confirm the password is set:
 ```bash
-su - noah.barrett
+passwd -S noah.barrett
 ```
-Should accept the password and drop you into noah.barrett's shell.
+First letter `P` means password set. (`su - noah.barrett` from a root session does not prompt for the password, root bypasses the auth check, so it cannot be used for verification here.)
 
-From your workstation, deposit your key on the new account. The `noah.barrett@` prefix is required, otherwise SSH falls back to your workstation's local username:
+From your workstation, deposit your key on the new account. The functional password test is implicit, `ssh-copy-id` falls back to password auth (no key yet for `noah.barrett`) and fails with `Permission denied` if the password is wrong. The `noah.barrett@` prefix is required, otherwise SSH falls back to your workstation's local username:
 ```bash
 ssh-copy-id noah.barrett@10.0.10.<host-octet>
 ```
@@ -193,9 +198,9 @@ grep -i '^Include' /etc/ssh/sshd_config
 ```
 Expect `Include /etc/ssh/sshd_config.d/*.conf`.
 
-Write the hardening file. As `noah.barrett`, use `sudo tee` (a plain `sudo cat >` will fail because the shell redirection runs as your user before `sudo` gets involved). As `root`, the heredoc and `cat >` work directly.
+Write the hardening file:
 ```bash
-sudo tee /etc/ssh/sshd_config.d/00-hardening.conf > /dev/null <<'EOF'
+cat > /etc/ssh/sshd_config.d/00-hardening.conf <<'EOF'
 PermitRootLogin prohibit-password
 PasswordAuthentication no
 PubkeyAuthentication yes
@@ -204,24 +209,24 @@ X11Forwarding no
 EOF
 ```
 
-Validate and reload. The `sshd` binary lives in `/usr/sbin/`, which is not on a regular user's `$PATH`, so the absolute path is required under `sudo`.
+Validate and reload. The `sshd` binary lives in `/usr/sbin/`, which is not on the default `$PATH` on PVE 9 even for root, so use the absolute path.
 ```bash
-sudo /usr/sbin/sshd -t && sudo systemctl reload ssh
+/usr/sbin/sshd -t && systemctl reload ssh
 ```
 
-Keep the existing session open. From a second terminal, confirm key auth works for both `root` and `noah.barrett`, and password auth is refused.
+Keep the existing root session open. From a second terminal, confirm key auth works for both `root` and `noah.barrett`, and password auth is refused.
 
 **CIS:** SSH server configuration.
 
 ### 9. ZFS pool on secondary SSD
 Cap the ARC. Default is ~50% of host RAM, which competes with VMs. 4 GiB is generous for lab workloads and uniform across pve01-04.
 ```bash
-sudo tee /etc/modprobe.d/zfs.conf > /dev/null <<'EOF'
+cat > /etc/modprobe.d/zfs.conf <<'EOF'
 options zfs zfs_arc_max=4294967296
 EOF
 
-sudo update-initramfs -u -k all
-echo 4294967296 | sudo tee /sys/module/zfs/parameters/zfs_arc_max > /dev/null
+update-initramfs -u -k all
+echo 4294967296 > /sys/module/zfs/parameters/zfs_arc_max
 ```
 
 Identify the secondary SSD. Verify device and serial before continuing.
@@ -236,8 +241,8 @@ ls -l /dev/disk/by-id/ | grep -v part
 
 Pool name `vmpool` is uniform across pve01-04 per [ADR-0013](../decisions/ADR-0013-cluster-storage-and-replication.md), which is what lets replication target peers by storage ID.
 ```bash
-sudo zpool create -o ashift=12 -O compression=lz4 -O atime=off vmpool /dev/disk/by-id/<ssd-id>
-sudo zpool status vmpool
+zpool create -o ashift=12 -O compression=lz4 -O atime=off vmpool /dev/disk/by-id/<ssd-id>
+zpool status vmpool
 ```
 Cluster-level storage registration happens at cluster formation, not here.
 
@@ -250,14 +255,21 @@ grep -n "data.status.toLowerCase" /usr/share/javascript/proxmox-widget-toolkit/p
 ```
 If it returns a single line, apply the patch:
 ```bash
-sudo sed -i.bak "s/res\.data\.status\.toLowerCase() !== 'active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
-sudo systemctl restart pveproxy
+sed -i.bak "s/res\.data\.status\.toLowerCase() !== 'active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
+systemctl restart pveproxy
 ```
 Hard refresh (Ctrl+Shift+R) the web UI tab and log back in. The dialog should not appear.
 
-### 11. Reboot
+### 11. Rotate passwords
+Replace the build-phase typable passwords with 20-character strong passwords for `root` and `noah.barrett`. Store both in the password manager.
 ```bash
-sudo systemctl reboot
+passwd root
+passwd noah.barrett
+```
+
+### 12. Reboot
+```bash
+systemctl reboot
 ```
 
 ## Validation
@@ -268,7 +280,7 @@ sudo systemctl reboot
 - `chronyc sources -v` shows `^*` on `10.0.10.1`
 - `zpool status vmpool` reports `ONLINE`
 - `cat /sys/module/zfs/parameters/zfs_arc_max` returns `4294967296`
-- Password manager has entries for root, `noah.barrett`, and the SSH key
+- Password manager has 20-character entries for `root` and `noah.barrett`, plus the SSH key
 
 ## Rollback
 - **Network:** console in, fix `/etc/network/interfaces` by hand, `ifreload -a`.
@@ -291,6 +303,10 @@ sudo systemctl reboot
 **Symptom:** `ssh-copy-id` returns `Permission denied` for `noah.barrett`.
 **Cause:** Username defaulted to workstation login (sshd log shows `invalid user noah` instead of `noah.barrett`), password not set on the account, or `ssh-agent` is offering keys that get rejected before the password prompt fires.
 **Fix:** Watch sshd events with `journalctl -u ssh -f` and reattempt. Debian 13 uses journald, `/var/log/auth.log` is not present by default. The log line tells you which case applies. For username default, use the explicit `noah.barrett@` prefix. For password issues, run `passwd -S noah.barrett` on the host to confirm `P` (password set), then `su - noah.barrett` to verify locally. For agent interference, force password auth with `ssh-copy-id -o PreferredAuthentications=password noah.barrett@10.0.10.<host-octet>`.
+
+**Symptom:** NVMe drive visible in the BIOS F12 boot menu but absent from the Proxmox installer disk list. Multiple drives reproduce the same behavior. BIOS firmware update does not help.
+**Cause:** Storage controller is in RAID mode, which routes NVMe through Intel RST/VMD and hides the device from the installer kernel. Secure Boot can compound this by blocking unsigned driver loads.
+**Fix:** In BIOS, set `Storage > SATA/NVMe Operation` to `AHCI/NVMe` (not `RAID On`) and disable Secure Boot. Verified on Dell Optiplex SFF, BIOS 1.32. From the installer's debug shell (`Advanced > Install Proxmox VE (Debug Mode)`, exit the first shell), `lspci | grep -i nvme` should show the controller and `ls /dev/nvme*` should list the device.
 
 ## Deferred to hardening pass
 - TOTP on web UI for `root@pam` and `noah.barrett@pam`
