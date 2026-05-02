@@ -30,7 +30,7 @@ Switching > Ports. Port 12 → Admin status: Disabled. Save.
 ### 4. Strip VLAN 1 untagged from sw01 port 1
 Switching > VLAN > Port Membership, port 1:
 - Remove VLAN 1 from untagged membership
-- PVID `10` (PVID is inert under Tagged Only + Ingress Filtering, but pick a valid VLAN)
+- PVID `1` per [ADR-0015](../decisions/ADR-0015-hypervisor-trunk-tagging-policy.md). VLAN 1 is the switch default and intentionally unused. PVID is inert under Tagged Only + Ingress Filtering, the unused-VLAN choice is for the failure mode where Tagged Only is later relaxed by mistake.
 - Acceptable Frame Types: Tagged Only
 - Ingress Filtering: enabled
 
@@ -45,7 +45,24 @@ Now that INFRA is the canonical mgmt zone, scope services down:
 
 Local Database stays in the auth chain throughout — do not remove it.
 
-### 6. Post-work backups
+### 6. INFRA baseline allow rules
+INFRA defaults to deny on the firewall. With the cutover complete, INFRA hosts (sw01, ap01, pbs01, pve01-04) need allow rules to reach fw01 services and the internet for OS updates. Add these now so each device onboarding procedure can validate without scrambling for missing rules.
+
+Firewall > Rules > INFRA. Add:
+
+| Action | Protocol | Source | Destination | Port | Description |
+|---|---|---|---|---|---|
+| Pass | ICMP echo req | INFRA net | This Firewall | – | INFRA → fw01 ping |
+| Pass | UDP | INFRA net | This Firewall | 53 | INFRA → fw01 DNS |
+| Pass | TCP | INFRA net | This Firewall | 53 | INFRA → fw01 DNS TCP |
+| Pass | UDP | INFRA net | This Firewall | 123 | INFRA → fw01 NTP |
+| Pass | TCP/UDP | INFRA net | `!rfc1918` alias | – | INFRA → internet (build phase) |
+
+Apply.
+
+Per ADR-0006, INFRA internet egress should be scoped to named update sources rather than blanket egress. The blanket egress rule above is a build-phase shortcut and gets tightened in the hardening pass once the lab is standing.
+
+### 7. Post-work backups
 - fw01: `config-post-network-cutover-YYYY-MM-DD.xml`
 - sw01: `sw01-config-post-network-cutover-YYYY-MM-DD.cfg`
 

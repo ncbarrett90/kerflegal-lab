@@ -65,14 +65,16 @@ Apply per-port settings per the matrix below. Configure in this order so the liv
 | 1 | fw01 uplink (staged) | 1 | 1 | 10, 20, 30, 40, 50, 60, 100 | Admit All | on | – | up |
 | 2 | ap01 | 10 | 10 | 100 | Admit All | on | on | down (until cabled) |
 | 3 | workstation HOME (staged) | 1 | 1 | – | Admit All | on | – | up |
-| 4 | pve01 | 10 | 10 | 30, 40, 50, 60 | Admit All | on | – | down |
-| 5 | pve02 | 10 | 10 | 30, 40, 50, 60 | Admit All | on | – | down |
-| 6 | pve03 | 10 | 10 | 30, 40, 50, 60 | Admit All | on | – | down |
-| 7 | pve04 | 10 | 10 | 30 | Admit All | on | – | down |
+| 4 | pve01 | 1 | – | 10, 30, 40, 50, 60 | Tagged Only | on | – | down |
+| 5 | pve02 | 1 | – | 10, 30, 40, 50, 60 | Tagged Only | on | – | down |
+| 6 | pve03 | 1 | – | 10, 30, 40, 50, 60 | Tagged Only | on | – | down |
+| 7 | pve04 | 1 | – | 10, 30 | Tagged Only | on | – | down |
 | 8 | pbs01 | 10 | 10 | – | Untagged Only | on | – | down (until cabled) |
 | 9 | wazuh01 | 20 | 20 | – | Untagged Only | on | – | down |
 | 10–23 | unused | – | – | – | – | – | – | down |
 | 24 | break-glass mgmt | 10 | 10 | – | Untagged Only | on | – | down |
+
+Hypervisor trunks (ports 4-7) follow [ADR-0015](../decisions/ADR-0015-hypervisor-trunk-tagging-policy.md). Every production VLAN is tagged, no production VLAN is an untagged member, PVID stays at VLAN 1 (unused), and Acceptable Frame Types is Tagged Only so untagged ingress is dropped.
 
 After staging ports 1 and 3, confirm management access still works before continuing.
 

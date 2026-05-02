@@ -32,7 +32,8 @@ Default deny between all zones at the firewall. Specific allow rules (domain ser
 **VLAN constraints:**
 - VLAN 1 is the switch default and cannot be reassigned.
 - VLAN 2 is hardcoded on the Netgear distribution switch and cannot be removed.
-- Trunk ports allow VLANs 10/20/30/40/50/60/100 and explicitly exclude VLANs 1 and 2. Per-trunk VLAN membership is defined in [network-design.md](../design/network-design.md); not every trunk carries every VLAN.
+- Trunk ports allow VLANs 10/20/30/40/50/60/100 and explicitly exclude VLANs 1 and 2. Per-trunk VLAN membership is defined in [network-design.md](../design/network-design.md). Not every trunk carries every VLAN.
+- Hypervisor trunk port tagging policy (no native VLAN on production VLANs, PVID set to unused VLAN 1) is defined in [ADR-0015](ADR-0015-hypervisor-trunk-tagging-policy.md).
 
 ## Alternatives Considered
 

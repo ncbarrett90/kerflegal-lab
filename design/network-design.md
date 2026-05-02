@@ -91,13 +91,13 @@ Default deny between all zones at the firewall. Categories below capture the req
 
 | Port | Role | Device | Port Type | PoE |
 |---|---|---|---|---|
-| 1 | Firewall uplink | fw01 LAN | Trunk (VLANs 10/20/30/40/50/60/100) | No |
-| 2 | AP | ap01 | Trunk (PVID 10, tagged 100) | Yes |
+| 1 | Firewall uplink | fw01 LAN | Trunk, tagged 10/20/30/40/50/60/100, PVID 1 unused | No |
+| 2 | AP | ap01 | Trunk, untagged 10, tagged 100 (ADR-0015 deviation) | Yes |
 | 3 | Personal workstation HOME | workstation | Access, PVID 100 | No |
-| 4 | Proxmox primary | pve01 | Trunk (VLANs 10/30/40/50/60) | No |
-| 5 | Proxmox node | pve02 | Trunk (VLANs 10/30/40/50/60) | No |
-| 6 | Proxmox node | pve03 | Trunk (VLANs 10/30/40/50/60) | No |
-| 7 | PAW hypervisor | pve04 | Trunk (VLANs 10/30) | No |
+| 4 | Proxmox primary | pve01 | Trunk, tagged 10/30/40/50/60, PVID 1 unused | No |
+| 5 | Proxmox node | pve02 | Trunk, tagged 10/30/40/50/60, PVID 1 unused | No |
+| 6 | Proxmox node | pve03 | Trunk, tagged 10/30/40/50/60, PVID 1 unused | No |
+| 7 | PAW hypervisor | pve04 | Trunk, tagged 10/30, PVID 1 unused | No |
 | 8 | PBS | pbs01 | Access, PVID 10 | No |
 | 9 | Wazuh SIEM | wazuh01 | Access, PVID 20 | No |
 | 10-23 | Reserved | - | Disabled | - |
@@ -106,9 +106,10 @@ Default deny between all zones at the firewall. Categories below capture the req
 Notes:
 
 - Proxmox host ports are trunks because each node runs VMs across multiple zones. VLAN tagging terminates on Linux bridges inside Proxmox.
-- ap01's trunk carries its management untagged on VLAN 10 and the HOME SSID tagged on VLAN 100. No lab SSIDs are broadcast.
+- Hypervisor trunks (ports 4-7) tag every production VLAN, including management. PVID stays at VLAN 1, intentionally unused, per [ADR-0015](../decisions/ADR-0015-hypervisor-trunk-tagging-policy.md). Management traffic on the host is carried tagged on VLAN 10 via `vmbr0.10`.
+- ap01's trunk carries its management untagged on VLAN 10 and the HOME SSID tagged on VLAN 100. No lab SSIDs are broadcast. This is the documented deviation in ADR-0015.
 - The personal workstation reaches the lab over the HOME SSID or by wire on sw01 port 3. No intermediate access switch (see [ADR-0012](../decisions/ADR-0012-no-dedicated-home-access-switch.md)).
 
 ## 5. DNS
 
-Split-horizon DNS. `kerflegal.com` is public at Cloudflare, `corp.kerflegal.com` is internal on the domain controllers. Non-domain-joined devices resolve through OPNsense Unbound on fw01. Upstream forwarder is Quad9.
+Split-horizon DNS with three internal zones per [ADR-0011](../decisions/ADR-0011-infrastructure-dns-zone.md). `kerflegal.com` is public at Cloudflare. `corp.kerflegal.com` is the AD-integrated zone on the domain controllers, holding domain-joined hosts. `infra.kerflegal.com` is on OPNsense Unbound, holding non-domain-joined infra (PVE nodes, PBS, switch, AP, Wazuh). Domain-joined hosts resolve through the DCs, which conditionally forward `infra.kerflegal.com` queries to fw01. Non-domain-joined hosts resolve directly through Unbound on fw01. Upstream forwarder is Quad9.

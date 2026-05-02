@@ -5,7 +5,7 @@ Adopt and configure the Ubiquiti UniFi AC Pro (ap01) as a single-SSID HOME radio
 
 ## Prerequisites
 - 04-network-cutover complete
-- AP cabled to sw01 port 2 (PVID 10 untagged, tagged 100, PoE on)
+- AP cabled to sw01 port 2 (PVID 10 untagged, tagged 100, PoE on). This is the documented [ADR-0015](../decisions/ADR-0015-hypervisor-trunk-tagging-policy.md) deviation, the UAP-AC-Pro binds management to its native VLAN by controller config.
 - AP MAC noted (from the unit's label)
 - Ubuntu workstation with KVM/QEMU
 - Windows guest VM with UniFi Network Application installed and running
