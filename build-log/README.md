@@ -9,3 +9,4 @@ That detail lives elsewhere in the repo. Step-by-step device buildout is collect
 | Phase | Period | Summary |
 |---|---|---|
 | [Network Buildout](2026-04-network-buildout/) | April 2026 | Firewall hardening, VLAN segmentation, switch buildout, network cutover, and AP adoption |
+| [Compute and Backup Buildout](2026-05-compute-and-backup/) | May 2026 | Three-node Proxmox cluster, standalone PAW hypervisor, dedicated cluster VLAN, ZFS replication, and per-node backup tokens to PBS |
