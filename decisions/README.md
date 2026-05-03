@@ -35,5 +35,6 @@
 | [0013](ADR-0013-cluster-storage-and-replication.md) | Cluster Storage Layout and Replication | Accepted | 2026-04-28 | - |
 | [0014](ADR-0014-backup-architecture.md) | Backup Architecture | Accepted | 2026-04-28 | - |
 | [0015](ADR-0015-hypervisor-trunk-tagging-policy.md) | Hypervisor Trunk Port Tagging Policy | Accepted | 2026-05-01 | - |
+| [0016](ADR-0016-dedicated-cluster-vlan.md) | Dedicated Cluster Communication VLAN | Accepted | 2026-05-02 | - |
 
 ---
