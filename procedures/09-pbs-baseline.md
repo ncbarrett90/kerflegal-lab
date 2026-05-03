@@ -16,7 +16,7 @@ Bring a freshly installed Proxmox Backup Server (pbs01) to the minimum state req
 
 Steps 1 and 2 run from the console. After step 2, SSH to the host as `root` from your workstation using the installer password. Step 3 replaces the installer root password with key auth, step 8 hardens sshd to refuse password auth entirely.
 
-Build phase uses a typable password for `root` and `noah.barrett`. Step 11 rotates both to 20-character strong passwords as the final action before reboot.
+Build phase uses a typable password for `root` and `noah.barrett`. Step 12 rotates both to 20-character strong passwords as the final action before reboot.
 
 ### 1. Hostname check
 ```bash
@@ -103,7 +103,7 @@ adduser --gecos "" --allow-bad-names noah.barrett
 passwd noah.barrett
 usermod -aG sudo noah.barrett
 ```
-Set a typable build-phase password at the `passwd` prompt. Step 11 rotates this to a 20-character strong password.
+Set a typable build-phase password at the `passwd` prompt. Step 12 rotates this to a 20-character strong password.
 
 ```bash
 passwd -S noah.barrett
@@ -164,7 +164,14 @@ Add the datastore in the PBS web UI:
 
 Confirm under Datastore > `<name>` > Summary that the datastore is online.
 
-### 10. Disable subscription nag
+### 10. Schedule a verify job
+Periodic verify catches bit rot on the datastore. Runs daily, skips already-verified snapshots, and re-checks anything older than 30 days.
+```bash
+proxmox-backup-manager verify-job create ds01-verify --store ds01 --schedule daily --ignore-verified true --outdated-after 30
+```
+Confirm under Datastore > ds01 > Verify Jobs.
+
+### 11. Disable subscription nag
 The PBS web UI shows a "No valid subscription" dialog at every login on a no-subscription install. Reverts on `proxmox-widget-toolkit` upgrades and needs reapplying after each.
 ```bash
 grep -n "data.status.toLowerCase" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
@@ -176,14 +183,14 @@ systemctl restart proxmox-backup-proxy
 ```
 Hard refresh the web UI and log back in. The dialog should not appear.
 
-### 11. Rotate passwords
+### 12. Rotate passwords
 Replace the build-phase typable passwords with 20-character strong passwords for `root` and `noah.barrett`. Store both in the password manager.
 ```bash
 passwd root
 passwd noah.barrett
 ```
 
-### 12. Reboot
+### 13. Reboot
 ```bash
 systemctl reboot
 ```
